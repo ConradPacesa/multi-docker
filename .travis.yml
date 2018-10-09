@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t conradpacesa/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run conradpacesa/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t conradpacesa/multi-client ./client
+  - docker build -t conradpacesa/multi-nginx ./nginx
+  - docker build -t conradpacesa/multi-server ./server
+  - docker build -t conradpacesa/multi-worker ./worker
+  - echo "$DOCKER_PASSOWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push conradpacesa/multi-client
+  - docker push conradpacesa/multi-nginx
+  - docker push conradpacesa/multi-server
+  - docker push conradpacesa/multi-worker
